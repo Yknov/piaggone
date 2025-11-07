@@ -54,9 +54,24 @@ $user_role = isset($_SESSION['user']['role']) ? htmlspecialchars($_SESSION['user
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link" href="#"> <i class="fas fa-fw fa-clipboard-list"></i>
-                        <span>Permintaan Pengadaan</span>
+                <li class="nav-item <?php echo ($current_page === 'inventory_produk_create.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="inventory_produk_create.php">
+                        <i class="fas fa-fw fa-plus-circle"></i>
+                        <span>Tambah Produk</span>
+                    </a>
+                </li>
+
+                <li class="nav-item <?php echo ($current_page === 'inventory_request_create.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="inventory_request_create.php">
+                        <i class="fas fa-fw fa-clipboard-list"></i>
+                        <span>Buat Permintaan</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item <?php echo ($current_page === 'inventory_request_history.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="inventory_request_history.php">
+                        <i class="fas fa-fw fa-history"></i>
+                        <span>Riwayat Permintaan</span>
                     </a>
                 </li>
             
@@ -67,13 +82,43 @@ $user_role = isset($_SESSION['user']['role']) ? htmlspecialchars($_SESSION['user
                         <span>Dashboard</span>
                     </a>
                 </li>
-                <?php elseif ($user_role === 'Owner'): ?>
+
+            <?php elseif ($user_role === 'Store Manager'): ?>
+                <li class="nav-item <?php echo ($current_page === 'dashboard_manager.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="dashboard_manager.php">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider">
+                <div class="sidebar-heading">
+                    Manajemen
+                </div>
+                <li class="nav-item <?php echo ($current_page === 'manager_request_review.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="manager_request_review.php">
+                        <i class="fas fa-fw fa-inbox"></i>
+                        <span>Tinjau Permintaan</span>
+                    </a>
+                </li>
+
+            <?php elseif ($user_role === 'Owner'): ?>
                 <li class="nav-item <?php echo ($current_page === 'dashboard_owner.php') ? 'active' : ''; ?>">
                     <a class="nav-link" href="dashboard_owner.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
+                <hr class="sidebar-divider">
+                <div class="sidebar-heading">
+                    Manajemen
+                </div>
+                <li class="nav-item <?php echo ($current_page === 'manager_request_review.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="manager_request_review.php">
+                        <i class="fas fa-fw fa-inbox"></i>
+                        <span>Tinjau Permintaan</span>
+                    </a>
+                </li>
+                
                 <?php endif; ?>
             
             <hr class="sidebar-divider d-none d-md-block">
