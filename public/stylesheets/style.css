@@ -1,0 +1,58 @@
+/* === Sidebar Layout (dari Desain Figma) === */
+
+/* Topnav harus tetap di atas */
+.navbar-fixed-top {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030; /* Di atas sidebar */
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh; /* Penuh setinggi layar */
+    width: 250px;
+    padding-top: 56px; /* Tinggi navbar atas (Bootstrap default) */
+    background-color: #212529; /* Bootstrap bg-dark */
+    z-index: 1000;
+    overflow-y: auto; /* Untuk scroll jika menu panjang */
+}
+
+/* Style untuk link di sidebar */
+.sidebar .nav-link {
+    color: #adb5bd; /* Abu-abu */
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+}
+
+.sidebar .nav-link:hover {
+    color: #ffffff;
+    background-color: #343a40;
+}
+
+/* Style untuk link yang sedang aktif */
+.sidebar .nav-link.active {
+    color: #ffffff;
+    font-weight: 500;
+    background-color: #0d6efd; /* Bootstrap primary blue */
+}
+
+/* Judul (seperti "Menu Inventory") */
+.sidebar .sidebar-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: .05rem;
+    color: #6c757d; /* Abu-abu tua */
+    padding: 0.5rem 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Konten Utama */
+.main-content {
+    /* Beri jarak kiri seukuran sidebar */
+    margin-left: 250px;
+    /* Tingkatkan jarak atas agar tidak terpotong oleh navbar fixed */
+    padding-top: 72px; /* naikkan dari 56px ke 72px; sesuaikan bila perlu */
+}
