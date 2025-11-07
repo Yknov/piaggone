@@ -35,40 +35,49 @@ $title = 'Login';
 require 'views/layouts/header_public.php';
 ?>
 
-<div class="row">
-    <div class="col-md-6 offset-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h1 class="card-title text-center"><?php echo htmlspecialchars($title); ?></h1>
-                
-                <?php if ($error): ?>
-                    <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-                <?php endif; ?>
-                
-                <?php if ($success_message): ?>
-                    <div class="alert alert-success"><?php echo htmlspecialchars($success_message); ?></div>
-                <?php endif; ?>
+<div class="row justify-content-center w-100">
+    <div class="col-xl-6 col-lg-8 col-md-9">
+        <div class="card o-hidden border-0 shadow-lg">
+            <div class="card-body p-0">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Selamat Datang!</h1>
+                            </div>
 
-                <form method="POST" action="login.php">
-                    <div class="mb-3">
-                        <label class="form-label" for="email">Email:</label>
-                        <input class="form-control" type="email" name="email" id="email" required>
+                            <?php if ($error): ?>
+                                <div class="alert alert-danger text-center"><?php echo htmlspecialchars($error); ?></div>
+                            <?php endif; ?>
+                            
+                            <?php if ($success_message): ?>
+                                <div class="alert alert-success text-center"><?php echo htmlspecialchars($success_message); ?></div>
+                            <?php endif; ?>
+
+                            <form class="user" method="POST" action="login.php">
+                                <div class="form-group">
+                                    <input type="email" class="form-control form-control-user"
+                                        id="email" name="email" aria-describedby="emailHelp"
+                                        placeholder="Masukkan Alamat Email..." required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="password" class="form-control form-control-user"
+                                        id="password" name="password" placeholder="Password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-user btn-block">
+                                    Login
+                                </button>
+                            </form>
+                            <hr>
+                            <div class="text-center">
+                                <a class="small" href="register.php">Buat Akun Pegawai Baru!</a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="password">Password:</label>
-                        <input class="form-control" type="password" name="password" id="password" required>
-                    </div>
-                    <div class="d-grid">
-                        <button class="btn btn-primary" type="submit">Login</button>
-                    </div>
-                </form>
-                
-                <p class="mt-3 text-center">
-                    <a href="register.php">Register Pegawai Baru</a>
-                </p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<?php require 'views/layouts/footer.php'; ?>
+<?php require 'views/layouts/footer_public.php'; ?>

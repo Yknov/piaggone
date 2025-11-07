@@ -1,59 +1,118 @@
 <?php
 // File ini mengasumsikan session sudah dimulai oleh file pemanggil
-// Dapatkan nama file saat ini (misal: "dashboard_inventory.php")
 $current_page = basename($_SERVER['PHP_SELF']);
+$user_nama = isset($_SESSION['user']['nama']) ? htmlspecialchars($_SESSION['user']['nama']) : 'Pengguna';
+$user_role = isset($_SESSION['user']['role']) ? htmlspecialchars($_SESSION['user']['role']) : 'Role';
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($title) ? htmlspecialchars($title) : 'Piagone Barbershop'; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="public/stylesheets/style.css">
-</head>
-<body class="bg-light">
-    
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-fixed-top shadow-sm">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="dashboard.php">Piagone Barbershop</a>
-        <div class="d-flex">
-          <?php if (isset($_SESSION['user'])): ?>
-            <span class="navbar-text me-3">
-              Login sebagai: 
-              <strong><?php echo htmlspecialchars($_SESSION['user']['nama']); ?> (<?php echo htmlspecialchars($_SESSION['user']['role']); ?>)</strong>
-            </span>
-            <a class="btn btn-outline-light" href="logout.php">Logout</a>
-          <?php endif; ?>
-        </div>
-      </div>
-    </nav>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title><?php echo isset($title) ? htmlspecialchars($title) : 'Piagone Dashboard'; ?></title>
 
-    <div class="sidebar shadow-sm">
-        <nav class="nav flex-column p-3">
-            
-            <?php if ($_SESSION['user']['role'] === 'Inventory Staff'): ?>
-                <div class="sidebar-heading">Menu Inventory</div>
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+<body id="page-top">
+
+    <div id="wrapper">
+
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="dashboard.php">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-cut"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">Piagone</div>
+            </a>
+
+            <hr class="sidebar-divider my-0">
+
+            <?php if ($user_role === 'Inventory Staff'): ?>
                 
-                <a class="nav-link <?php echo ($current_page === 'dashboard_inventory.php') ? 'active' : ''; ?>" 
-                   href="dashboard_inventory.php">
-                    Dashboard
-                </a>
-                <a class="nav-link <?php echo ($current_page === 'inventory_stok.php') ? 'active' : ''; ?>" 
-                   href="inventory_stok.php">
-                    Stok Produk
-                </a>
-                <a class="nav-link <?php echo ($current_page === 'inventory_request.php') ? 'active' : ''; ?>" 
-                   href="inventory_request.php">
-                    Buat Permintaan
-                </a>
-                <?php elseif ($_SESSION['user']['role'] === 'Owner'): ?>
-                <div class="sidebar-heading">Menu Owner</div>
-                <?php elseif ($_SESSION['user']['role'] === 'Kasir'): ?>
-                <div class="sidebar-heading">Menu Kasir</div>
+                <li class="nav-item <?php echo ($current_page === 'dashboard_inventory.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="dashboard_inventory.php">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-heading">
+                    Manajemen Stok
+                </div>
+
+                <li class="nav-item <?php echo ($current_page === 'inventory_stok.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="inventory_stok.php">
+                        <i class="fas fa-fw fa-boxes"></i>
+                        <span>Stok Produk</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#"> <i class="fas fa-fw fa-clipboard-list"></i>
+                        <span>Permintaan Pengadaan</span>
+                    </a>
+                </li>
+            
+            <?php elseif ($user_role === 'Kasir'): ?>
+                <li class="nav-item <?php echo ($current_page === 'dashboard_kasir.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="dashboard_kasir.php">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <?php elseif ($user_role === 'Owner'): ?>
+                <li class="nav-item <?php echo ($current_page === 'dashboard_owner.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="dashboard_owner.php">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
                 <?php endif; ?>
             
-        </nav>
-    </div>
+            <hr class="sidebar-divider d-none d-md-block">
 
-    <main class="main-content p-4">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <div id="content">
+
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <ul class="navbar-nav ml-auto">
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $user_nama; ?> (<?php echo $user_role; ?>)</span>
+                                <img class="img-profile rounded-circle"
+                                    src="img/undraw_profile.svg">
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="logout.php" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </nav>
+                <div class="container-fluid">

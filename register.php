@@ -3,41 +3,20 @@ session_start();
 require_once 'services/auth_service.php';
 
 $error = null;
-$success = null;
-
-// Jika sudah login, redirect ke dashboard (opsional)
-if (isset($_SESSION['user'])) {
-    header('Location: dashboard.php');
-    exit;
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Ambil & trim input dengan aman
-    $nama = trim((string)($_POST['nama'] ?? ''));
-    $email = trim((string)($_POST['email'] ?? ''));
-    $nomorHP = trim((string)($_POST['nomorHP'] ?? ''));
-    $password = (string)($_POST['password'] ?? '');
-    $role = trim((string)($_POST['role'] ?? ''));
-
-    // Validasi sederhana (di PHP)
-    $allowed_roles = ['Owner','Store Manager','Inventory Staff','Kasir','Barber','Marketing'];
-
-    if ($nama === '' || $email === '' || $password === '' || $role === '') {
+    // Validasi sederhana
+    if (empty($_POST['nama']) || empty($_POST['email']) || empty($_POST['password']) || empty($_POST['role'])) {
         $error = 'Nama, Email, Password, dan Role wajib diisi.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Email tidak valid.';
-    } elseif (strlen($password) < 6) {
-        $error = 'Password minimal 6 karakter.';
-    } elseif (!in_array($role, $allowed_roles, true)) {
-        $error = 'Role tidak valid.';
+    } else if ($_POST['password'] !== $_POST['password_repeat']) {
+        $error = 'Password dan konfirmasi password tidak cocok.';
     } else {
-        // Biarkan service yang melakukan pengecekan duplikat lebih teliti
         $result = FUNGSI_REGISTER_PEGAWAI(
-            $nama,
-            $nomorHP === '' ? null : $nomorHP,
-            $email,
-            $password,
-            $role
+            $_POST['nama'],
+            $_POST['nomorHP'],
+            $_POST['email'],
+            $_POST['password'],
+            $_POST['role']
         );
 
         if ($result['success']) {
@@ -49,56 +28,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$title = 'Register Pegawai Baru';
+$title = 'Register Akun Pegawai';
 require 'views/layouts/header_public.php';
 ?>
 
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <div class="card">
-            <div class="card-body">
-                <h1 class="card-title text-center"><?php echo htmlspecialchars($title); ?></h1>
+<div class="row justify-content-center w-100">
+    <div class="col-xl-8 col-lg-10 col-md-9">
+        <div class="card o-hidden border-0 shadow-lg">
+            <div class="card-body p-0">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Buat Akun Pegawai Baru!</h1>
+                            </div>
 
-                <?php if ($error): ?>
-                    <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-                <?php endif; ?>
-                
-                <form method="POST" action="register.php">
-                    <div class="mb-3">
-                        <label class="form-label" for="nama">Nama Lengkap:</label>
-                        <input class="form-control" type="text" name="nama" id="nama" required value="<?php echo isset($nama) ? htmlspecialchars($nama) : ''; ?>">
+                            <?php if ($error): ?>
+                                <div class="alert alert-danger text-center"><?php echo htmlspecialchars($error); ?></div>
+                            <?php endif; ?>
+
+                            <form class="user" method="POST" action="register.php">
+                                <div class="form-group">
+                                    <input type="text" class="form-control form-control-user" id="nama" name="nama"
+                                        placeholder="Nama Lengkap" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" class="form-control form-control-user" id="email" name="email"
+                                        placeholder="Alamat Email" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="tel" class="form-control form-control-user" id="nomorHP" name="nomorHP"
+                                        placeholder="Nomor HP (Opsional)">
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <input type="password" class="form-control form-control-user"
+                                            id="password" name="password" placeholder="Password" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input type="password" class="form-control form-control-user"
+                                            id="password_repeat" name="password_repeat" placeholder="Ulangi Password" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <select class="form-control form-control-user" style="font-size: .8rem; border-radius: 10rem; padding-left: 1rem; height: 3.1rem;" name="role" id="role" required>
+                                        <option value="">-- Pilih Role Pegawai --</option>
+                                        <option value="Owner">Owner</option>
+                                        <option value="Store Manager">Store Manager</option>
+                                        <option value="Inventory Staff">Inventory Staff</option>
+                                        <option value="Kasir">Kasir</option>
+                                        <option value="Barber">Barber</option>
+                                        <option value="Marketing">Marketing</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-user btn-block">
+                                    Register Akun
+                                </button>
+                            </form>
+                            <hr>
+                            <div class="text-center">
+                                <a class="small" href="login.php">Sudah punya akun? Login!</a>
+                            </div>
+                        </div>
                     </div>
-                     <div class="mb-3">
-                        <label class="form-label" for="email">Email:</label>
-                        <input class="form-control" type="email" name="email" id="email" required value="<?php echo isset($email) ? htmlspecialchars($email) : ''; ?>">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="nomorHP">Nomor HP:</label>
-                        <input class="form-control" type="tel" name="nomorHP" id="nomorHP" value="<?php echo isset($nomorHP) ? htmlspecialchars($nomorHP) : ''; ?>">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="password">Password:</label>
-                        <input class="form-control" type="password" name="password" id="password" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="role">Role:</label>
-                        <select class="form-select" name="role" id="role" required>
-                            <option value="">-- Pilih Role --</option>
-                            <option value="Owner" <?php echo (isset($role) && $role==='Owner') ? 'selected' : ''; ?>>Owner</option>
-                            <option value="Store Manager" <?php echo (isset($role) && $role==='Store Manager') ? 'selected' : ''; ?>>Store Manager</option>
-                            <option value="Inventory Staff" <?php echo (isset($role) && $role==='Inventory Staff') ? 'selected' : ''; ?>>Inventory Staff</option>
-                            <option value="Kasir" <?php echo (isset($role) && $role==='Kasir') ? 'selected' : ''; ?>>Kasir</option>
-                            <option value="Barber" <?php echo (isset($role) && $role==='Barber') ? 'selected' : ''; ?>>Barber</option>
-                            <option value="Marketing" <?php echo (isset($role) && $role==='Marketing') ? 'selected' : ''; ?>>Marketing</option>
-                        </select>
-                    </div>
-                    <div class="d-grid">
-                        <button class="btn btn-primary" type="submit">Register</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<?php require 'views/layouts/footer.php'; ?>
+<?php require 'views/layouts/footer_public.php'; ?>
