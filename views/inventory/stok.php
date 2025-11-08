@@ -1,11 +1,14 @@
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="mb-0">Daftar Stok Produk</h3>
-        </div>
+<h1 class="h3 mb-2 text-gray-800"><?php echo htmlspecialchars($title); ?></h1>
+<p class="mb-4">Daftar semua produk yang terdaftar di dalam sistem.</p>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Data Produk</h6>
+    </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover">
-                <thead class="table-dark">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
                     <tr>
                         <th>ID</th>
                         <th>Nama Produk</th>
@@ -13,12 +16,12 @@
                         <th>Stok Saat Ini</th>
                         <th>Batas Min. Stok</th>
                         <th>Status</th>
-                        </tr>
+                    </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($daftar_produk)): ?>
                         <tr>
-                            <td colspan="7" class="text-center">Belum ada data produk.</td>
+                            <td colspan="6" class="text-center">Belum ada data produk.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($daftar_produk as $produk): ?>
@@ -32,15 +35,15 @@
                                     <?php
                                     // Beri tanda visual berdasarkan status stok
                                     if ($produk['jumlahStok'] == 0) {
-                                        echo '<span class="badge bg-danger">Habis</span>';
+                                        echo '<span class="badge badge-danger">Habis</span>';
                                     } else if ($produk['jumlahStok'] <= $produk['batasMinimumStok']) {
-                                        echo '<span class="badge bg-warning text-dark">Menipis</span>';
+                                        echo '<span class="badge badge-warning">Menipis</span>';
                                     } else {
-                                        echo '<span class="badge bg-success">Aman</span>';
+                                        echo '<span class="badge badge-success">Aman</span>';
                                     }
                                     ?>
                                 </td>
-                                </tr>
+                            </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>

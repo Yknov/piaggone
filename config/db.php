@@ -2,7 +2,7 @@
 // Pengaturan Database
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', ''); // Sesuaikan dengan password database Anda
+define('DB_PASS', '12345678'); // Sesuaikan dengan password database Anda
 define('DB_NAME', 'piaggone');
 
 /**

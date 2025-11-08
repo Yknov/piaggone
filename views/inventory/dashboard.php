@@ -1,34 +1,56 @@
-<h1 class="h2 mb-4">Dashboard</h1>
-
-<div class="card shadow-sm border-0 mb-4">
-    <div class="card-body">
-        <h5 class="card-title">Selamat Datang, <?php echo htmlspecialchars($user['nama']); ?>!</h5>
-        <p class="card-text">Anda login sebagai Inventory Staff. Gunakan menu di sebelah kiri untuk mengelola stok dan permintaan barang.</p>
-    </div>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard (Inventory Staff)</h1>
 </div>
 
 <div class="row">
-    <div class="col-lg-4">
-        <div class="card text-white bg-primary shadow-sm mb-3">
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
-                <h6 class="card-title text-uppercase">Total Varian Produk</h6>
-                <h3 class="display-6"><?php echo $total_produk; ?></h3>
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Varian Produk</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_produk; ?></div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card text-dark bg-warning shadow-sm mb-3">
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
             <div class="card-body">
-                <h6 class="card-title text-uppercase">Stok Menipis</h6>
-                <h3 class="display-6"><?php echo $stok_menipis; ?></h3>
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Stok Menipis</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $stok_menipis; ?></div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card text-white bg-danger shadow-sm mb-3">
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
             <div class="card-body">
-                <h6 class="card-title text-uppercase">Stok Habis</h6>
-                <h3 class="display-6"><?php echo $stok_habis; ?></h3>
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Stok Habis</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $stok_habis; ?></div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-ban fa-2x text-gray-300"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
