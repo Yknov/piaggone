@@ -70,7 +70,7 @@ require 'views/layouts/header_public.php';
                             </form>
                             <hr>
                             <div class="text-center">
-                                <a class="small" href="register.php">Buat Akun Pegawai Baru!</a>
+                                <a class="small" href="register.php">Buat Akun Baru!</a>
                             </div>
                         </div>
                     </div>

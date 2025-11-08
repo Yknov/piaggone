@@ -74,6 +74,14 @@ $user_role = isset($_SESSION['user']['role']) ? htmlspecialchars($_SESSION['user
                         <span>Riwayat Permintaan</span>
                     </a>
                 </li>
+
+                <li class="nav-item <?php echo ($current_page === 'inventory_receive_stock.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="inventory_receive_stock.php">
+                        <i class="fas fa-fw fa-truck-loading"></i>
+                        <span>Penerimaan Barang</span>
+                    </a>
+                </li>
+
             
             <?php elseif ($user_role === 'Kasir'): ?>
                 <li class="nav-item <?php echo ($current_page === 'dashboard_kasir.php') ? 'active' : ''; ?>">
@@ -83,39 +91,65 @@ $user_role = isset($_SESSION['user']['role']) ? htmlspecialchars($_SESSION['user
                     </a>
                 </li>
 
-            <?php elseif ($user_role === 'Store Manager'): ?>
-                <li class="nav-item <?php echo ($current_page === 'dashboard_manager.php') ? 'active' : ''; ?>">
-                    <a class="nav-link" href="dashboard_manager.php">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <hr class="sidebar-divider">
+                <?php elseif ($user_role === 'Store Manager'): ?>
                 <div class="sidebar-heading">
                     Manajemen
                 </div>
+                
                 <li class="nav-item <?php echo ($current_page === 'manager_request_review.php') ? 'active' : ''; ?>">
                     <a class="nav-link" href="manager_request_review.php">
                         <i class="fas fa-fw fa-inbox"></i>
                         <span>Tinjau Permintaan</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item <?php echo ($current_page === 'manager_request_history.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="manager_request_history.php">
+                        <i class="fas fa-fw fa-history"></i>
+                        <span>Seluruh Riwayat</span>
                     </a>
                 </li>
 
-            <?php elseif ($user_role === 'Owner'): ?>
-                <li class="nav-item <?php echo ($current_page === 'dashboard_owner.php') ? 'active' : ''; ?>">
-                    <a class="nav-link" href="dashboard_owner.php">
+                <?php elseif ($user_role === 'Owner'): ?>
+                <div class="sidebar-heading">
+                    Manajemen
+                </div>
+                
+                <li class="nav-item <?php echo ($current_page === 'manager_request_review.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="manager_request_review.php">
+                        <i class="fas fa-fw fa-inbox"></i>
+                        <span>Tinjau Permintaan</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item <?php echo ($current_page === 'manager_request_history.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="manager_request_history.php">
+                        <i class="fas fa-fw fa-history"></i>
+                        <span>Seluruh Riwayat</span>
+                    </a>
+                </li>
+
+                <?php elseif ($user_role === 'Pelanggan'): ?>
+                <li class="nav-item <?php echo ($current_page === 'dashboard_customer.php') ? 'active' : ''; ?>">
+                    <a class="nav-link" href="dashboard_customer.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <hr class="sidebar-divider">
                 <div class="sidebar-heading">
-                    Manajemen
+                    Akun Saya
                 </div>
-                <li class="nav-item <?php echo ($current_page === 'manager_request_review.php') ? 'active' : ''; ?>">
-                    <a class="nav-link" href="manager_request_review.php">
-                        <i class="fas fa-fw fa-inbox"></i>
-                        <span>Tinjau Permintaan</span>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-fw fa-history"></i>
+                        <span>Riwayat Transaksi</span>
+                    </a>
+                </li>
+                 <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-fw fa-star"></i>
+                        <span>Poin Loyalty</span>
                     </a>
                 </li>
                 

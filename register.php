@@ -6,17 +6,17 @@ $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validasi sederhana
-    if (empty($_POST['nama']) || empty($_POST['email']) || empty($_POST['password']) || empty($_POST['role'])) {
-        $error = 'Nama, Email, Password, dan Role wajib diisi.';
+    if (empty($_POST['nama']) || empty($_POST['email']) || empty($_POST['password'])) {
+        $error = 'Nama, Email, dan Password wajib diisi.';
     } else if ($_POST['password'] !== $_POST['password_repeat']) {
         $error = 'Password dan konfirmasi password tidak cocok.';
     } else {
-        $result = FUNGSI_REGISTER_PEGAWAI(
+        // Panggil fungsi BARU untuk registrasi PELANGGAN
+        $result = FUNGSI_REGISTER_PELANGGAN(
             $_POST['nama'],
             $_POST['nomorHP'],
             $_POST['email'],
-            $_POST['password'],
-            $_POST['role']
+            $_POST['password']
         );
 
         if ($result['success']) {
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$title = 'Register Akun Pegawai';
+$title = 'Register Akun Pelanggan';
 require 'views/layouts/header_public.php';
 ?>
 
@@ -40,7 +40,7 @@ require 'views/layouts/header_public.php';
                     <div class="col-lg-12">
                         <div class="p-5">
                             <div class="text-center">
-                                <h1 class="h4 text-gray-900 mb-4">Buat Akun Pegawai Baru!</h1>
+                                <h1 class="h4 text-gray-900 mb-4">Buat Akun Pelanggan!</h1>
                             </div>
 
                             <?php if ($error): ?>
@@ -70,17 +70,7 @@ require 'views/layouts/header_public.php';
                                             id="password_repeat" name="password_repeat" placeholder="Ulangi Password" required>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <select class="form-control form-control-user" style="font-size: .8rem; border-radius: 10rem; padding-left: 1rem; height: 3.1rem;" name="role" id="role" required>
-                                        <option value="">-- Pilih Role Pegawai --</option>
-                                        <option value="Owner">Owner</option>
-                                        <option value="Store Manager">Store Manager</option>
-                                        <option value="Inventory Staff">Inventory Staff</option>
-                                        <option value="Kasir">Kasir</option>
-                                        <option value="Barber">Barber</option>
-                                        <option value="Marketing">Marketing</option>
-                                    </select>
-                                </div>
+                                
                                 <button type="submit" class="btn btn-primary btn-user btn-block">
                                     Register Akun
                                 </button>

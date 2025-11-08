@@ -22,10 +22,12 @@ switch ($userRole) {
     case 'Kasir':
         header('Location: dashboard_kasir.php');
         break;
-    case 'Barber Team':
+    case 'Barber':
         header('Location: dashboard_barber.php');
         break;
-    // ... tambahkan case lain sesuai enum di DB Anda
+    case 'Pelanggan':
+        header('Location: dashboard_customer.php');
+        break;
     default:
         // Jika role tidak dikenal, logout saja untuk keamanan
         header('Location: logout.php');

@@ -43,62 +43,7 @@ function FUNGSI_GET_SUMMARY_STOK() {
 }
 
 /**
- * Membuat permintaan pengadaan baru.
- * Menggunakan transaksi untuk insert ke 2 tabel.
- *
- * @param int $staff_user_id ID dari pegawai yang membuat permintaan.
- * @param array $items Array berisi item yang diminta, cth: [ ['produkID' => 1, 'jumlah' => 10], ... ]
- * @return array Hasil operasi [success => bool, message => string]
- */
-function FUNGSI_CREATE_PENGADAAN($staff_user_id, $items) {
-    $pdo = get_db_connection();
-    
-    try {
-        $pdo->beginTransaction();
-
-        // 1. Insert ke tabel master 'PermintaanPengadaan'
-        $sqlMaster = "INSERT INTO PermintaanPengadaan (userID_staff, tanggalPermintaan, status) 
-                      VALUES (?, NOW(), 'Menunggu')";
-        $stmtMaster = $pdo->prepare($sqlMaster);
-        $stmtMaster->execute([$staff_user_id]);
-
-        // 2. Dapatkan ID dari request yang baru saja kita buat
-        $requestID = $pdo->lastInsertId();
-
-        // 3. Siapkan query untuk insert ke tabel 'DetailPermintaan'
-        $sqlDetail = "INSERT INTO DetailPermintaan (requestID, produkID, jumlahDiminta) 
-                      VALUES (?, ?, ?)";
-        $stmtDetail = $pdo->prepare($sqlDetail);
-
-        // 4. Loop dan insert setiap item ke tabel detail
-        foreach ($items as $item) {
-            $stmtDetail->execute([
-                $requestID,
-                $item['produkID'],
-                $item['jumlah']
-            ]);
-        }
-
-        // 5. Jika semua berhasil, commit transaksi
-        $pdo->commit();
-        return ['success' => true, 'message' => 'Permintaan pengadaan berhasil dibuat.'];
-
-    } catch (PDOException $e) {
-        // 6. Jika ada error, batalkan semua perubahan
-        $pdo->rollBack();
-        error_log('Error FUNGSI_CREATE_PENGADAAN: ' . $e->getMessage());
-        return ['success' => false, 'message' => 'Terjadi kesalahan database saat membuat permintaan.'];
-    }
-}
-
-/**
  * Menambahkan produk baru ke database.
- *
- * @param string $nama Nama produk
- * @param float $harga Harga produk
- * @param int $stok Jumlah stok awal
- * @param int $batas_stok Batas minimum stok
- * @return array Hasil operasi [success => bool, message => string]
  */
 function FUNGSI_CREATE_PRODUK($nama, $harga, $stok, $batas_stok) {
     $pdo = get_db_connection();
@@ -113,7 +58,6 @@ function FUNGSI_CREATE_PRODUK($nama, $harga, $stok, $batas_stok) {
 
     } catch (PDOException $e) {
         error_log('Error FUNGSI_CREATE_PRODUK: ' . $e->getMessage());
-        // Cek jika error-nya adalah duplikat entry
         if ($e->getCode() == 23000) {
             return ['success' => false, 'message' => 'Gagal: Nama produk mungkin sudah ada.'];
         }
@@ -122,19 +66,54 @@ function FUNGSI_CREATE_PRODUK($nama, $harga, $stok, $batas_stok) {
 }
 
 /**
+ * Membuat permintaan pengadaan baru.
+ * Menggunakan transaksi untuk insert ke 2 tabel.
+ */
+function FUNGSI_CREATE_PENGADAAN($staff_user_id, $items) {
+    $pdo = get_db_connection();
+    
+    try {
+        $pdo->beginTransaction();
+
+        // 1. Insert ke tabel master 'PermintaanPengadaan'
+        $sqlMaster = "INSERT INTO PermintaanPengadaan (userID_staff, tanggalPermintaan, status) 
+                      VALUES (?, NOW(), 'Menunggu')";
+        $stmtMaster = $pdo->prepare($sqlMaster);
+        $stmtMaster->execute([$staff_user_id]);
+
+        $requestID = $pdo->lastInsertId();
+
+        // 2. Siapkan query untuk insert ke tabel 'DetailPermintaan'
+        $sqlDetail = "INSERT INTO DetailPermintaan (requestID, produkID, jumlahDiminta) 
+                      VALUES (?, ?, ?)";
+        $stmtDetail = $pdo->prepare($sqlDetail);
+
+        // 3. Loop dan insert setiap item ke tabel detail
+        foreach ($items as $item) {
+            $stmtDetail->execute([
+                $requestID,
+                $item['produkID'],
+                $item['jumlah']
+            ]);
+        }
+
+        $pdo->commit();
+        return ['success' => true, 'message' => 'Permintaan pengadaan berhasil dibuat.'];
+
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        error_log('Error FUNGSI_CREATE_PENGADAAN: ' . $e->getMessage());
+        return ['success' => false, 'message' => 'Terjadi kesalahan database saat membuat permintaan.'];
+    }
+}
+
+/**
  * Mengambil riwayat permintaan pengadaan berdasarkan ID staff.
- *
- * @param int $staff_user_id ID dari pegawai (staff) yang membuat permintaan.
- * @return array Daftar riwayat permintaan.
  */
 function FUNGSI_GET_REQUEST_HISTORY_BY_STAFF($staff_user_id) {
     $pdo = get_db_connection();
     
     try {
-        /* * Query ini mengambil:
-         * 1. Data permintaan (ID, tanggal, status) dari tabel PermintaanPengadaan.
-         * 2. Nama manager (jika ada) dari tabel Pengguna, dengan melakukan JOIN melalui tabel Pegawai.
-         */
         $sql = "SELECT 
                     pp.requestID, 
                     pp.tanggalPermintaan, 
@@ -164,18 +143,11 @@ function FUNGSI_GET_REQUEST_HISTORY_BY_STAFF($staff_user_id) {
 
 /**
  * Mengambil data master dari satu permintaan pengadaan.
- *
- * @param int $requestID ID permintaan yang akan dicari.
- * @param int $staff_user_id ID staff yang login (untuk verifikasi).
- * @return array|false Data master permintaan, atau false jika tidak ditemukan/tidak diizinkan.
  */
 function FUNGSI_GET_REQUEST_MASTER($requestID, $staff_user_id) {
     $pdo = get_db_connection();
     
     try {
-        /* * Query ini mengambil data permintaan DAN nama staff pembuat DAN nama manager peninjau.
-         * Kita juga memvalidasi bahwa requestID ini memang milik staff_user_id yang login.
-         */
         $sql = "SELECT 
                     pp.requestID, 
                     pp.tanggalPermintaan, 
@@ -198,7 +170,7 @@ function FUNGSI_GET_REQUEST_MASTER($requestID, $staff_user_id) {
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$requestID, $staff_user_id]);
         
-        return $stmt->fetch(); // Mengembalikan satu baris data master
+        return $stmt->fetch();
 
     } catch (PDOException $e) {
         error_log('Error FUNGSI_GET_REQUEST_MASTER: ' . $e->getMessage());
@@ -208,18 +180,13 @@ function FUNGSI_GET_REQUEST_MASTER($requestID, $staff_user_id) {
 
 /**
  * Mengambil item-item detail dari satu permintaan pengadaan.
- *
- * @param int $requestID ID permintaan yang akan dicari.
- * @return array Daftar item produk.
+ * (Ini adalah versi yang Anda perbarui, sudah benar)
  */
 function FUNGSI_GET_REQUEST_DETAILS_ITEMS($requestID) {
     $pdo = get_db_connection();
-    
     try {
-        /* * Query ini mengambil semua item dari DetailPermintaan
-         * dan menggabungkannya dengan tabel Produk untuk mendapatkan nama produk.
-         */
         $sql = "SELECT 
+                    dp.produkID, 
                     dp.jumlahDiminta,
                     p.namaProduk,
                     p.harga
@@ -229,12 +196,9 @@ function FUNGSI_GET_REQUEST_DETAILS_ITEMS($requestID) {
                     Produk AS p ON dp.produkID = p.produkID
                 WHERE 
                     dp.requestID = ?";
-                    
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$requestID]);
-        
         return $stmt->fetchAll();
-
     } catch (PDOException $e) {
         error_log('Error FUNGSI_GET_REQUEST_DETAILS_ITEMS: ' . $e->getMessage());
         return [];
@@ -243,17 +207,12 @@ function FUNGSI_GET_REQUEST_DETAILS_ITEMS($requestID) {
 
 /**
  * Mengambil semua permintaan pengadaan berdasarkan status.
- * (Digunakan oleh manager untuk melihat permintaan 'Menunggu')
- *
- * @param string $status Status yang dicari ('Menunggu', 'Disetujui', 'Ditolak').
- * @return array Daftar permintaan.
+ * (Digunakan oleh manager)
  */
 function FUNGSI_GET_ALL_REQUESTS_BY_STATUS($status) {
     $pdo = get_db_connection();
     
     try {
-        /* * Query ini mengambil data permintaan DAN nama staff pembuat.
-         */
         $sql = "SELECT 
                     pp.requestID, 
                     pp.tanggalPermintaan, 
@@ -268,7 +227,7 @@ function FUNGSI_GET_ALL_REQUESTS_BY_STATUS($status) {
                 WHERE 
                     pp.status = ?
                 ORDER BY 
-                    pp.tanggalPermintaan ASC"; // Tampilkan yang paling lama di atas
+                    pp.tanggalPermintaan ASC";
                     
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$status]);
@@ -283,16 +242,11 @@ function FUNGSI_GET_ALL_REQUESTS_BY_STATUS($status) {
 
 /**
  * Mengubah status permintaan pengadaan (Approve/Reject).
- *
- * @param int $requestID ID permintaan yang akan diubah.
- * @param int $manager_user_id ID dari manager yang melakukan aksi.
- * @param string $newStatus Status baru ('Disetujui' atau 'Ditolak').
- * @return array Hasil operasi [success => bool, message => string]
+ * (Digunakan oleh manager)
  */
 function FUNGSI_UPDATE_REQUEST_STATUS($requestID, $manager_user_id, $newStatus) {
     $pdo = get_db_connection();
     
-    // Pastikan status yang diinput valid
     if ($newStatus !== 'Disetujui' && $newStatus !== 'Ditolak') {
         return ['success' => false, 'message' => 'Status tidak valid.'];
     }
@@ -308,7 +262,6 @@ function FUNGSI_UPDATE_REQUEST_STATUS($requestID, $manager_user_id, $newStatus) 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$newStatus, $manager_user_id, $requestID]);
         
-        // Cek apakah ada baris yang benar-benar ter-update
         if ($stmt->rowCount() > 0) {
             return ['success' => true, 'message' => "Permintaan #$requestID berhasil di-$newStatus."];
         } else {
@@ -318,6 +271,131 @@ function FUNGSI_UPDATE_REQUEST_STATUS($requestID, $manager_user_id, $newStatus) 
     } catch (PDOException $e) {
         error_log('Error FUNGSI_UPDATE_REQUEST_STATUS: ' . $e->getMessage());
         return ['success' => false, 'message' => 'Terjadi kesalahan database.'];
+    }
+}
+
+/**
+ * Memproses penerimaan barang dari permintaan yang sudah disetujui.
+ * (Ini fungsi yang Anda sertakan, sudah benar)
+ */
+function FUNGSI_RECEIVE_STOCK($requestID, $staff_user_id) {
+    $pdo = get_db_connection();
+    
+    try {
+        $pdo->beginTransaction();
+
+        $items = FUNGSI_GET_REQUEST_DETAILS_ITEMS($requestID);
+        
+        if (empty($items)) {
+            throw new Exception("Tidak ada item detail ditemukan untuk permintaan ini.");
+        }
+
+        $sqlUpdateStok = "UPDATE Produk SET jumlahStok = jumlahStok + ? WHERE produkID = ?";
+        $stmtUpdateStok = $pdo->prepare($sqlUpdateStok);
+
+        foreach ($items as $item) {
+            $stmtUpdateStok->execute([
+                $item['jumlahDiminta'],
+                $item['produkID']
+            ]);
+        }
+
+        $sqlMaster = "UPDATE PermintaanPengadaan SET status = 'Selesai' 
+                      WHERE requestID = ? AND status = 'Disetujui'";
+        $stmtMaster = $pdo->prepare($sqlMaster);
+        $stmtMaster->execute([$requestID]);
+
+        if ($stmtMaster->rowCount() === 0) {
+            throw new Exception("Gagal update status permintaan. Mungkin sudah diproses atau statusnya bukan 'Disetujui'.");
+        }
+
+        $pdo->commit();
+        return ['success' => true, 'message' => "Stok untuk Permintaan #$requestID berhasil diperbarui."];
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        error_log('Error FUNGSI_RECEIVE_STOCK: ' . $e->getMessage());
+        return ['success' => false, 'message' => $e->getMessage()];
+    }
+}
+
+/**
+ * Mengambil data master dari satu permintaan (versi Admin/Manager).
+ *
+ * @param int $requestID ID permintaan yang akan dicari.
+ * @return array|false Data master permintaan, atau false jika tidak ditemukan.
+ */
+function FUNGSI_GET_REQUEST_MASTER_ADMIN($requestID) {
+    $pdo = get_db_connection();
+    
+    try {
+        /* * Query ini sama dengan FUNGSI_GET_REQUEST_MASTER,
+         * TAPI tanpa klausa "AND pp.userID_staff = ?"
+         */
+        $sql = "SELECT 
+                    pp.requestID, 
+                    pp.tanggalPermintaan, 
+                    pp.status,
+                    p_staff.nama AS namaStaff,
+                    p_manager.nama AS namaManager
+                FROM 
+                    PermintaanPengadaan AS pp
+                JOIN 
+                    Pegawai AS pg_staff ON pp.userID_staff = pg_staff.userID
+                JOIN
+                    Pengguna AS p_staff ON pg_staff.userID = p_staff.userID
+                LEFT JOIN 
+                    Pegawai AS pg_manager ON pp.userID_manager = pg_manager.userID
+                LEFT JOIN
+                    Pengguna AS p_manager ON pg_manager.userID = p_manager.userID
+                WHERE 
+                    pp.requestID = ?";
+                    
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$requestID]);
+        
+        return $stmt->fetch();
+
+    } catch (PDOException $e) {
+        error_log('Error FUNGSI_GET_REQUEST_MASTER_ADMIN: ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Mengambil SEMUA riwayat permintaan pengadaan untuk admin/manager.
+ *
+ * @return array Daftar semua permintaan.
+ */
+function FUNGSI_GET_ALL_REQUESTS_HISTORY() {
+    $pdo = get_db_connection();
+    
+    try {
+        $sql = "SELECT 
+                    pp.requestID, 
+                    pp.tanggalPermintaan, 
+                    pp.status,
+                    p_staff.nama AS namaStaff,
+                    p_manager.nama AS namaManager
+                FROM 
+                    PermintaanPengadaan AS pp
+                JOIN 
+                    Pegawai AS pg_staff ON pp.userID_staff = pg_staff.userID
+                JOIN
+                    Pengguna AS p_staff ON pg_staff.userID = p_staff.userID
+                LEFT JOIN 
+                    Pegawai AS pg_manager ON pp.userID_manager = pg_manager.userID
+                LEFT JOIN
+                    Pengguna AS p_manager ON pg_manager.userID = p_manager.userID
+                ORDER BY 
+                    pp.requestID DESC"; // Tampilkan yang terbaru di atas
+                    
+        $stmt = $pdo->query($sql);
+        return $stmt->fetchAll();
+
+    } catch (PDOException $e) {
+        error_log('Error FUNGSI_GET_ALL_REQUESTS_HISTORY: ' . $e->getMessage());
+        return [];
     }
 }
 ?>

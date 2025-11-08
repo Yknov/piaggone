@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/db.php';
 
 /**
- * Memverifikasi login pegawai.
+ * Memverifikasi login (Pegawai ATAU Pelanggan).
  * @param string $email
  * @param string $password
  * @return array|null Data user jika valid, null jika tidak.
@@ -11,11 +11,11 @@ function FUNGSI_VERIFIKASI_LOGIN($email, $password) {
     try {
         $pdo = get_db_connection();
         
-        // 1. Cari pengguna berdasarkan email (gunakan fetch associative)
+        // 1. Cari pengguna berdasarkan email di tabel utama 'Pengguna'
         $sql = "SELECT userID, nama, email, password_hash FROM Pengguna WHERE email = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$email]);
-        $pengguna = $stmt->fetch(PDO::FETCH_ASSOC);
+        $pengguna = $stmt->fetch();
 
         if (!$pengguna) {
             return null; // Email tidak ditemukan
@@ -24,25 +24,40 @@ function FUNGSI_VERIFIKASI_LOGIN($email, $password) {
         // 2. Verifikasi password
         if (password_verify($password, $pengguna['password_hash'])) {
             
-            // 3. Jika password benar, cari perannya di tabel Pegawai
-            $sqlRole = "SELECT role FROM Pegawai WHERE userID = ?";
-            $stmtRole = $pdo->prepare($sqlRole);
-            $stmtRole->execute([$pengguna['userID']]);
-            $pegawai = $stmtRole->fetch(PDO::FETCH_ASSOC);
+            // 3. Jika password benar, cari perannya. PRIORITASKAN PEGAWAI.
+            $sqlRolePegawai = "SELECT role FROM Pegawai WHERE userID = ?";
+            $stmtRolePegawai = $pdo->prepare($sqlRolePegawai);
+            $stmtRolePegawai->execute([$pengguna['userID']]);
+            $pegawai = $stmtRolePegawai->fetch();
 
             if ($pegawai) {
-                // Sukses! User adalah pegawai. Gabungkan data.
-                $user_data = [
+                // Sukses! User adalah PEGAWAI internal.
+                return [
                     'userID' => $pengguna['userID'],
                     'nama' => $pengguna['nama'],
                     'email' => $pengguna['email'],
-                    'role' => $pegawai['role']
+                    'role' => $pegawai['role'] // cth: 'Kasir', 'Owner'
                 ];
-                return $user_data;
-            } else {
-                // User ada, tapi bukan pegawai (mungkin pelanggan)
-                return null;
             }
+
+            // 4. Jika bukan pegawai, cek apakah dia PELANGGAN
+            $sqlRolePelanggan = "SELECT userID FROM Pelanggan WHERE userID = ?";
+            $stmtRolePelanggan = $pdo->prepare($sqlRolePelanggan);
+            $stmtRolePelanggan->execute([$pengguna['userID']]);
+            $pelanggan = $stmtRolePelanggan->fetch();
+
+            if ($pelanggan) {
+                // Sukses! User adalah PELANGGAN.
+                return [
+                    'userID' => $pengguna['userID'],
+                    'nama' => $pengguna['nama'],
+                    'email' => $pengguna['email'],
+                    'role' => 'Pelanggan' // Role kita tetapkan manual
+                ];
+            }
+
+            // User ada di tabel Pengguna tapi tidak di Pegawai/Pelanggan (akun non-aktif)
+            return null; 
         }
 
         return null; // Password salah
@@ -133,6 +148,53 @@ function FUNGSI_REGISTER_PEGAWAI($nama, $nomorHP, $email, $password, $role) {
         }
         
         error_log('Register Error: ' . $e->getMessage());
+        return ['success' => false, 'message' => 'Registrasi gagal. Terjadi kesalahan server.'];
+    }
+}
+
+/**
+ * Mendaftarkan pelanggan (customer) baru.
+ * @return array Hasil operasi [success => bool, message => string]
+ */
+function FUNGSI_REGISTER_PELANGGAN($nama, $nomorHP, $email, $password) {
+    $pdo = get_db_connection();
+    
+    try {
+        $pdo->beginTransaction();
+
+        // 1. Hash password
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        // 2. Insert ke tabel 'Pengguna'
+        $sqlUser = "INSERT INTO Pengguna (nama, nomorHP, email, password_hash) VALUES (?, ?, ?, ?)";
+        $stmtUser = $pdo->prepare($sqlUser);
+        $stmtUser->execute([$nama, $nomorHP, $email, $hashedPassword]);
+
+        $newUserId = $pdo->lastInsertId();
+
+        // 3. Insert ke tabel 'Pelanggan'
+        // Poin loyalty defaultnya 0
+        $sqlPelanggan = "INSERT INTO Pelanggan (userID, poinLoyalty) VALUES (?, 0)";
+        $stmtPelanggan = $pdo->prepare($sqlPelanggan);
+        $stmtPelanggan->execute([$newUserId]);
+
+        // 4. Commit transaksi
+        $pdo->commit();
+        return ['success' => true, 'message' => 'Registrasi berhasil'];
+
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        
+        if ($e->getCode() == 23000) {
+             if (strpos($e->getMessage(), 'email') !== false) {
+                return ['success' => false, 'message' => 'Email sudah digunakan'];
+             }
+             if (strpos($e->getMessage(), 'nomorHP') !== false) {
+                return ['success' => false, 'message' => 'Nomor HP sudah digunakan'];
+             }
+        }
+        
+        error_log('Register Pelanggan Error: ' . $e->getMessage());
         return ['success' => false, 'message' => 'Registrasi gagal. Terjadi kesalahan server.'];
     }
 }
