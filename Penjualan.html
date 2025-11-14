@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piaggone POS - Point of Sale</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 0;
+        }
+        
+        .products-section {
+            padding: 30px;
+            background: #f8f9fa;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .product-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .product-price {
+            color: #667eea;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .product-stock {
+            font-size: 0.9em;
+            color: #666;
+            padding: 5px 10px;
+            background: #e9ecef;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .product-stock.low {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .cart-section {
+            background: white;
+            padding: 30px;
+            border-left: 3px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            max-height: 400px;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .cart-item-info {
+            flex: 1;
+        }
+        
+        .cart-item-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .cart-item-price {
+            color: #667eea;
+            font-size: 0.9em;
+        }
+        
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .qty-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qty-btn:hover {
+            background: #764ba2;
+        }
+        
+        .qty-display {
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .cart-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+        
+        .summary-row.total {
+            border-top: 2px solid #667eea;
+            padding-top: 15px;
+            margin-top: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .promo-section {
+            margin-bottom: 20px;
+        }
+        
+        .promo-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+        
+        .payment-section {
+            margin-bottom: 20px;
+        }
+        
+        .payment-method {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .payment-btn {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .checkout-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .receipt {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .modal-btn {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🪒 Piaggone Haircut</h1>
+            <p>Point of Sale System - Penjualan Produk</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="products-section">
+                <div class="section-title">
+                    📦 Katalog Produk
+                </div>
+                <div id="alert" class="alert"></div>
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="cart-section">
+                <div class="section-title">
+                    🛒 Keranjang Belanja
+                </div>
+                
+                <div class="cart-items" id="cartItems">
+                    <div class="empty-cart">
+                        Keranjang masih kosong.<br>
+                        Pilih produk untuk memulai transaksi.
+                    </div>
+                </div>
+                
+                <div class="promo-section">
+                    <label><strong>Promo:</strong></label>
+                    <select class="promo-select" id="promoSelect">
+                        <option value="">Tanpa Promo</option>
+                    </select>
+                </div>
+                
+                <div class="cart-summary" id="cartSummary" style="display: none;">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Diskon:</span>
+                        <span id="discount">Rp 0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="total">Rp 0</span>
+                    </div>
+                </div>
+                
+                <div class="payment-section">
+                    <label><strong>Metode Pembayaran:</strong></label>
+                    <div class="payment-method">
+                        <button class="payment-btn active" data-method="Tunai">💵 Tunai</button>
+                        <button class="payment-btn" data-method="QRIS">📱 QRIS</button>
+                    </div>
+                </div>
+                
+                <button class="checkout-btn" id="checkoutBtn" disabled>
+                    Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="receiptModal">
+        <div class="modal-content">
+            <h2>✅ Transaksi Berhasil!</h2>
+            <div class="receipt" id="receipt"></div>
+            <button class="modal-btn" onclick="printReceipt()">🖨️ Cetak Nota</button>
+            <button class="modal-btn" onclick="newTransaction()">🆕 Transaksi Baru</button>
+        </div>
+    </div>
+
+    <script>
+        // Data simulasi (dalam implementasi nyata, data diambil dari database via API)
+        let products = [
+            {id: 1, name: 'Pomade', price: 150000, stock: 105},
+            {id: 2, name: 'Minyak Rambut Premium', price: 85000, stock: 50},
+            {id: 3, name: 'Sisir Kayu', price: 25000, stock: 100},
+            {id: 4, name: 'Vitamin Rambut', price: 120000, stock: 30},
+            {id: 5, name: 'Hair Spray', price: 45000, stock: 60}
+        ];
+        
+        let promos = [
+            {id: 1, name: 'Diskon 10%', type: 'Persen', value: 10, minPurchase: 200000},
+            {id: 2, name: 'Diskon 50rb', type: 'Nominal', value: 50000, minPurchase: 300000}
+        ];
+        
+        let cart = [];
+        let selectedPayment = 'Tunai';
+        let selectedPromo = null;
+        
+        // Initialize
+        function init() {
+            renderProducts();
+            renderPromos();
+            setupEventListeners();
+        }
+        
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card" onclick="addToCart(${product.id})">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">Rp ${formatNumber(product.price)}</div>
+                    <div class="product-stock ${product.stock <= 10 ? 'low' : ''}">
+                        Stok: ${product.stock}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderPromos() {
+            const select = document.getElementById('promoSelect');
+            promos.forEach(promo => {
+                const option = document.createElement('option');
+                option.value = promo.id;
+                option.textContent = `${promo.name} (Min. Rp ${formatNumber(promo.minPurchase)})`;
+                select.appendChild(option);
+            });
+        }
+        
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            
+            if (product.stock <= 0) {
+                showAlert('Stok produk habis!', 'error');
+                return;
+            }
+            
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                if (existingItem.qty >= product.stock) {
+                    showAlert('Jumlah melebihi stok tersedia!', 'error');
+                    return;
+                }
+                existingItem.qty++;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    qty: 1,
+                    maxStock: product.stock
+                });
+            }
+            
+            renderCart();
+            updateSummary();
+            showAlert(`${product.name} ditambahkan ke keranjang`, 'success');
+        }
+        
+        function renderCart() {
+            const cartContainer = document.getElementById('cartItems');
+            
+            if (cart.length === 0) {
+                cartContainer.innerHTML = `
+                    <div class="empty-cart">
+                        Keranjang masih kosong.<br>
+                        Pilih produk untuk memulai transaksi.
+                    </div>
+                `;
+                document.getElementById('checkoutBtn').disabled = true;
+                return;
+            }
+            
+            cartContainer.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">Rp ${formatNumber(item.price)} x ${item.qty}</div>
+                    </div>
+                    <div class="cart-item-controls">
+                        <button class="qty-btn" onclick="updateQty(${item.id}, -1)">−</button>
+                        <div class="qty-display">${item.qty}</div>
+                        <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                        <button class="remove-btn" onclick="removeFromCart(${item.id})">×</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('checkoutBtn').disabled = false;
+        }
+        
+        function updateQty(productId, change) {
+            const item = cart.find(i => i.id === productId);
+            const newQty = item.qty + change;
+            
+            if (newQty <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+            
+            if (newQty > item.maxStock) {
+                showAlert('Jumlah melebihi stok tersedia!', 'error');
+                return;
+            }
+            
+            item.qty = newQty;
+            renderCart();
+            updateSummary();
+        }
+        
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            renderCart();
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            const summaryDiv = document.getElementById('cartSummary');
+            
+            if (cart.length === 0) {
+                summaryDiv.style.display = 'none';
+                return;
+            }
+            
+            summaryDiv.style.display = 'block';
+            
+            let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let discount = 0;
+            
+            // Apply promo
+            const promoId = document.getElementById('promoSelect').value;
+            if (promoId) {
+                const promo = promos.find(p => p.id == promoId);
+                if (promo && subtotal >= promo.minPurchase) {
+                    if (promo.type === 'Persen') {
+                        discount = subtotal * (promo.value / 100);
+                    } else {
+                        discount = promo.value;
+                    }
+                }
+            }
+            
+            const total = subtotal - discount;
+            
+            document.getElementById('subtotal').textContent = 'Rp ' + formatNumber(subtotal);
+            document.getElementById('discount').textContent = '- Rp ' + formatNumber(discount);
+            document.getElementById('total').textContent = 'Rp ' + formatNumber(total);
+        }
+        
+        function setupEventListeners() {
+            // Payment method selection
+            document.querySelectorAll('.payment-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedPayment = this.dataset.method;
+                });
+            });
+            
+            // Promo selection
+            document.getElementById('promoSelect').addEventListener('change', updateSummary);
+            
+            // Checkout
+            document.getElementById('checkoutBtn').addEventListener('click', checkout);
+        }
+        
+        function checkout() {
+            if (cart.length === 0) return;
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let discount = 0;
+            
+            const promoId = document.getElementById('promoSelect').value;
+            let promoName = 'Tanpa Promo';
+            
+            if (promoId) {
+                const promo = promos.find(p => p.id == promoId);
+                if (promo && subtotal >= promo.minPurchase) {
+                    promoName = promo.name;
+                    if (promo.type === 'Persen') {
+                        discount = subtotal * (promo.value / 100);
+                    } else {
+                        discount = promo.value;
+                    }
+                }
+            }
+            
+            const total = subtotal - discount;
+            
+            // Update stock
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                product.stock -= item.qty;
+            });
+            
+            // Show receipt
+            showReceipt(cart, subtotal, discount, total, promoName);
+            
+            // Clear cart
+            cart = [];
+            renderProducts();
+            renderCart();
+            updateSummary();
+            document.getElementById('promoSelect').value = '';
+        }
+        
+        function showReceipt(items, subtotal, discount, total, promoName) {
+            const receipt = document.getElementById('receipt');
+            const now = new Date();
+            
+            let html = `
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <strong style="font-size: 1.2em;">PIAGGONE HAIRCUT</strong><br>
+                    <small>Nota Penjualan Produk</small>
+                </div>
+                <div class="receipt-row">
+                    <span>Tanggal:</span>
+                    <span>${now.toLocaleDateString('id-ID')}</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Waktu:</span>
+                    <span>${now.toLocaleTimeString('id-ID')}</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Kasir:</span>
+                    <span>Kasir1</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Pembayaran:</span>
+                    <span>${selectedPayment}</span>
+                </div>
+                <div style="margin: 15px 0; border-top: 2px solid #333; padding-top: 10px;">
+                    <strong>Item:</strong>
+                </div>
+            `;
+            
+            items.forEach(item => {
+                html += `
+                    <div class="receipt-row">
+                        <span>${item.name} (${item.qty}x)</span>
+                        <span>Rp ${formatNumber(item.price * item.qty)}</span>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #333;">
+                    <div class="receipt-row">
+                        <span>Subtotal:</span>
+                        <span>Rp ${formatNumber(subtotal)}</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Promo (${promoName}):</span>
+                        <span>- Rp ${formatNumber(discount)}</span>
+                    </div>
+                    <div class="receipt-row" style="border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-size: 1.2em;">
+                        <strong>TOTAL:</strong>
+                        <strong>Rp ${formatNumber(total)}</strong>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 15px; font-size: 0.9em;">
+                    Terima kasih atas kunjungan Anda!<br>
+                    Sampai jumpa lagi 😊
+                </div>
+            `;
+            
+            receipt.innerHTML = html;
+            document.getElementById('receiptModal').classList.add('active');
+        }
+        
+        function printReceipt() {
+            window.print();
+        }
+        
+        function newTransaction() {
+            document.getElementById('receiptModal').classList.remove('active');
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} active`;
+            
+            setTimeout(() => {
+                alert.classList.remove('active');
+            }, 3000);
+        }
+        
+        function formatNumber(num) {
+            return num.toLocaleString('id-ID');
+        }
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
